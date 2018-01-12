@@ -1,4 +1,4 @@
-# himitsu_8
+# himitsu_B2
 
 ## プログラムの概要
 
