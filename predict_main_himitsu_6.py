@@ -1,5 +1,6 @@
 """
 ##プログラム概要
+- 修正版評価手法B
 - 被験者に知っているひみつ道具を入力させる
 	+ 質問形式（ランダム）
 	+ 入力した結果から被験者の知識リストを作成	
@@ -23,13 +24,14 @@ import gc
 
 
 
-"""被験者に知識情報を入力させる"""
+"""被験者に知識情報を入力させる（修正前）
 def mk_user_know(sorted):
 
 	#知識情報入力
 	wiselist = []
+	cnt = 0
+
 	for item in sorted:
-		cnt = 0
 		print(item[1])
 		data = input("これを知っていれば1, 知らなければ0を入力してください:")
 		#例外処理
@@ -44,11 +46,49 @@ def mk_user_know(sorted):
 		if data == str(1):
 			wiselist.append(item[1])
 			cnt += 1
-	#知っている知識が1個以上になったらループを抜け出す
-		if cnt != 0:
-			break
+			#知っている知識が3個以上になったらループを抜け出す(2018/1/12変更)
+			if cnt > 2:
+				break
 
 	return wiselist
+"""
+
+	
+"""被験者に知識情報を入力させる（修正後）"""
+def mk_user_know(himitsu):
+
+	#指定道具数数ランダム抽出			
+	a = random.sample(himitsu, 100)
+
+	#知識情報入力
+	wiselist = []
+	cnt = 0
+	for item in a:
+		print(item)
+		print("これを知っていれば1, 知らなければ0を入力してください")
+		data = input()
+		while 0 < 1:
+			if data == str(0):
+				break
+			elif data == str(1):
+				break
+			else:
+				data = input("入力しなおしてください")
+				
+		#入力データリストに追加
+		if data == str(1):
+			wiselist.append(item)
+			cnt += 1
+			#知っている知識が3個以上になったらループを抜け出す
+			if cnt > 2:
+				break
+
+
+		
+	return wiselist
+
+
+
 	
 
 
@@ -75,9 +115,8 @@ def mk_input_data(wiselist, all_word_list):
 def mk_know_dic(x, y, vec):
 	know_dic  = {}		
 	for (j, data) in enumerate(x):
-		#0.5以上の確率だった場合は出力に渡す
 		i = j + 1
-		if y[0][j] >= 0.5:
+		if y[0][j] >= 0.4:
 			for k,v in vec.items():
 				if vec[k] == i:
 					know_dic[k] = y[0][j]
@@ -100,9 +139,9 @@ if __name__ == "__main__":
 	#出現順にsortしたデータの読み込み
 	sorted   = collected_himitsu_sort.count_sort(collected, himitsu)
 	
-	#学習結果の読み込み
-	model = model_from_json(open('predict_model_himitsu_b.json').read())
-	model.load_weights('predict_weights_himitsu_b.h5')
+	#学習結果の読み込み：中のファイル名は学習済みのモデルおよびパラメータ
+	model = model_from_json(open('predict_model_himitsu_1.json').read())
+	model.load_weights('predict_weights_himitsu_1.h5')
 	
 	#概要の出力
 	model.summary();
@@ -110,9 +149,11 @@ if __name__ == "__main__":
 
 	
 	while 0 < 1 :
-	
+		print("これは手法Bによる推定器です")
 		#ユーザ入力部
-		wise_list = mk_user_know(sorted)
+		wise_list = mk_user_know(himitsu)#修正後の入力法
+		#wise_list = mk_user_know(sorted)#修正前の入力法
+
 		print(wise_list)
 		#推定器への入力用データの作成
 		input_data = mk_input_data(wise_list, himitsu)
